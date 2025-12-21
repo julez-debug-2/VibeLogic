@@ -12,6 +12,11 @@ export function generatePrompt(
 ): string {
     const lines: string[] = [];
 
+    /* ---------- ID → Name Mapping für lesbare Referenzen ---------- */
+    const nodeMap = new Map(
+        graph.nodes.map(n => [n.id, n.label || "Unnamed"])
+    );
+
     /* ---------- Rolle ---------- */
     lines.push(
         "You are a senior software engineer.",
@@ -37,44 +42,56 @@ export function generatePrompt(
         );
     }
 
-    lines.push("", "LOGIC FLOW:");
+    lines.push("", "## LOGIC FLOW");
 
     /* ---------- Nodes ---------- */
+    let stepNumber = 1;
     for (const node of graph.nodes) {
-        if (node.type === "start") {
-            lines.push(`- Start`);
+        const label = node.label || "Untitled";
+        
+        if (node.type === "input") {
+            lines.push(`${stepNumber}. **Input:** ${label}`);
         }
 
         if (node.type === "process") {
-            lines.push(`- Process: ${node.label}`);
+            lines.push(`${stepNumber}. **Process:** ${label}`);
         }
 
         if (node.type === "decision") {
-            lines.push(`- Decision: ${node.condition}`);
+            const condition = node.condition || label;
+            lines.push(`${stepNumber}. **Decision:** ${condition}`);
         }
 
         if (node.type === "output") {
-            lines.push(`- Output: ${node.label}`);
+            lines.push(`${stepNumber}. **Output:** ${label}`);
         }
+        
+        stepNumber++;
     }
 
-    lines.push("", "DECISIONS:");
-
-    /* ---------- Edges ---------- */
-    for (const edge of graph.edges) {
-        if (edge.branch) {
+    /* ---------- Decisions mit lesbaren Namen ---------- */
+    const decisionEdges = graph.edges.filter(e => e.branch);
+    
+    if (decisionEdges.length > 0) {
+        lines.push("", "## DECISION BRANCHES");
+        
+        for (const edge of decisionEdges) {
+            const fromName = nodeMap.get(edge.from) || edge.from;
+            const toName = nodeMap.get(edge.to) || edge.to;
+            
             lines.push(
-                `- If ${edge.branch.toUpperCase()}: go from ${edge.from} to ${edge.to}`
+                `- **${edge.branch?.toUpperCase()}:** "${fromName}" → "${toName}"`
             );
         }
     }
 
     lines.push(
         "",
-        "CONSTRAINTS:",
+        "## CONSTRAINTS",
         "- Do not invent additional logic",
-        "- Follow the flow exactly",
-        "- Use clear naming and structure"
+        "- Follow the flow exactly as described",
+        "- Use clear, descriptive naming",
+        "- Implement error handling where appropriate"
     );
 
     return lines.join("\n");

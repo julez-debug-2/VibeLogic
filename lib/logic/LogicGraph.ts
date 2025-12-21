@@ -1,5 +1,5 @@
 export type LogicNodeType =
-    | "start"
+    | "input"
     | "process"
     | "decision"
     | "output";

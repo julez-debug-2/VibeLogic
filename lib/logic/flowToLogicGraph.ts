@@ -8,8 +8,8 @@ export function flowToLogicGraph(
     return {
         nodes: nodes.map((n) => ({
             id: n.id,
-            type: n.type as any,
-            label: n.data?.label,
+            type: n.data?.role || n.type as any,
+            label: n.data?.title || n.data?.label,
             condition: n.data?.condition,
         })),
 
