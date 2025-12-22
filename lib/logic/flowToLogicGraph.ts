@@ -10,6 +10,7 @@ export function flowToLogicGraph(
             id: n.id,
             type: n.data?.role || n.type as any,
             label: n.data?.title || n.data?.label,
+            description: n.data?.description,
             condition: n.data?.condition,
         })),
 

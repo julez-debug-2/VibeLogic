@@ -98,7 +98,7 @@ npm run lint       # ESLint check
 
 ### Key Entry Points
 
-- **Main Editor:** [app/page.tsx](app/page.tsx) rendert `<FlowCanvas />`
+- **Main Editor:** [app/page.tsx](../app/page.tsx) rendert `<FlowCanvas />`
 - **Export Logic:** Button in FlowCanvas ruft `flowToLogicGraph(nodes, edges)` → console.log
 - **Generate Prompt:** Button ruft `generatePrompt(graph, { target: "code" })` → zeigt in PromptPreview
 

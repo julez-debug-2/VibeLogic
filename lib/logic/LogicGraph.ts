@@ -8,6 +8,7 @@ export type LogicNode = {
     id: string;
     type: LogicNodeType;
     label?: string;
+    description?: string;
     condition?: string;
 };
 
