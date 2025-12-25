@@ -129,7 +129,7 @@ export function parseFlowText(text: string): LogicGraph {
                         id: nanoid(),
                         from: fromId,
                         to: toId,
-                        branch: "yes"
+                        condition: "yes"
                     });
                 } else {
                     console.warn(`⚠️ Parser: YES branch target "${parsed.branches.yes}" not found for decision "${parsed.title}"`);
@@ -142,7 +142,7 @@ export function parseFlowText(text: string): LogicGraph {
                         id: nanoid(),
                         from: fromId,
                         to: toId,
-                        branch: "no"
+                        condition: "no"
                     });
                 } else {
                     console.warn(`⚠️ Parser: NO branch target "${parsed.branches.no}" not found for decision "${parsed.title}"`);
@@ -212,7 +212,7 @@ export function parseLogicText(
             };
 
             nodes.push(node);
-            edges.push({ from: lastNodeId, to: node.id });
+            edges.push({ id: nanoid(), from: lastNodeId, to: node.id });
             lastNodeId = node.id;
             pendingDecision = null;
             continue;
@@ -229,8 +229,7 @@ export function parseLogicText(
             };
 
             nodes.push(node);
-            edges.push({ from: lastNodeId, to: node.id });
-            lastNodeId = node.id;
+            edges.push({ id: nanoid(), from: lastNodeId, to: node.id }); \n            lastNodeId = node.id;
             pendingDecision = null;
             continue;
         }
@@ -251,7 +250,7 @@ export function parseLogicText(
             };
 
             nodes.push(node);
-            edges.push({ from: lastNodeId, to: node.id });
+            edges.push({ id: nanoid(), from: lastNodeId, to: node.id });
 
             pendingDecision = node;
             lastNodeId = node.id;
@@ -272,6 +271,7 @@ export function parseLogicText(
 
             pendingDecision.branches.yes = node.id;
             edges.push({
+                id: nanoid(),
                 from: pendingDecision.id,
                 to: node.id,
                 condition: "yes",
@@ -294,6 +294,7 @@ export function parseLogicText(
 
             pendingDecision.branches.no = node.id;
             edges.push({
+                id: nanoid(),
                 from: pendingDecision.id,
                 to: node.id,
                 condition: "no",
@@ -314,7 +315,7 @@ export function parseLogicText(
             };
 
             nodes.push(node);
-            edges.push({ from: lastNodeId, to: node.id });
+            edges.push({ id: nanoid(), from: lastNodeId, to: node.id });
             lastNodeId = node.id;
             pendingDecision = null;
             continue;
@@ -328,7 +329,7 @@ export function parseLogicText(
         };
 
         nodes.push(node);
-        edges.push({ from: lastNodeId, to: node.id });
+        edges.push({ id: nanoid(), from: lastNodeId, to: node.id });
         lastNodeId = node.id;
         pendingDecision = null;
     }
@@ -341,7 +342,7 @@ export function parseLogicText(
     };
 
     nodes.push(endNode);
-    edges.push({ from: lastNodeId, to: endNode.id });
+    edges.push({ id: nanoid(), from: lastNodeId, to: endNode.id });
 
     return {
         id: `graph_${Date.now()}`,

@@ -98,6 +98,7 @@ export type LogicNode =
  * ----------------------------------------- */
 
 export interface LogicEdge {
+    id: LogicId;
     from: LogicId;
     to: LogicId;
     condition?: string; // e.g. "yes", "no", "fallback"
