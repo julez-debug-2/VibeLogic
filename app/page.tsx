@@ -1,8 +1,7 @@
 "use client";
 
+import { SessionProvider, signIn, signOut, useSession } from "next-auth/react";
 import { FlowCanvas } from "../components/FlowEditor/FlowCanvas";
-import { useSession, signIn, signOut } from "next-auth/react";
-import { SessionProvider } from "next-auth/react";
 
 function HomeContent() {
     const { data: session, status } = useSession();

@@ -2,11 +2,11 @@
  * Next-Auth Configuration with PostgreSQL Adapter
  */
 
+import PostgresAdapter from "@auth/pg-adapter";
+import { Pool } from "@neondatabase/serverless";
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
-import { Pool } from "@neondatabase/serverless";
-import PostgresAdapter from "@auth/pg-adapter";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
