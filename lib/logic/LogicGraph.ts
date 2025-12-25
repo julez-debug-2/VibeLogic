@@ -21,6 +21,9 @@ export type LogicEdge = {
 };
 
 export type LogicGraph = {
+    id?: string;
+    title?: string;
+    description?: string;
     nodes: LogicNode[];
     edges: LogicEdge[];
 };

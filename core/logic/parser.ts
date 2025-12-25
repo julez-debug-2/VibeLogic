@@ -167,6 +167,7 @@ export function parseFlowText(text: string): LogicGraph {
     console.log(`📊 Edges:`, edges.map(e => `${nodes.find(n => n.id === e.from)?.label} → ${nodes.find(n => n.id === e.to)?.label} ${e.condition ? `[${e.condition}]` : ''}`));
 
     return {
+        id: `graph_${Date.now()}`,
         title: "Optimized Flow",
         description: "AI-generated logic flow",
         nodes,
