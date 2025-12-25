@@ -4,12 +4,45 @@ import type {
 
 /* -----------------------------------------
  * Flow Validation & Analysis
+ * 
+ * TODO: Algorithmische Validierung für Strukturregeln
+ * =====================================================
+ * Phase 2 (nach KI-basierter Bewertung):
+ * 
+ * Zu implementieren:
+ * 1. Strukturregeln (1.x):
+ *    - 1.1: Genau ein Start-Node (PRIO 1)
+ *    - 1.3: Jeder Pfad endet in Output (PRIO 1)
+ *    - 1.5: Alle Nodes vom Start erreichbar (PRIO 2)
+ *    - 1.7: Endlosschleifen-Detektion via Zyklen-Analyse (PRIO 1)
+ * 
+ * 2. Entscheidungsregeln (2.x):
+ *    - 2.1: Decision hat condition (PRIO 1) ✅ teilweise
+ *    - 2.6: Alle Cases abgedeckt (yes+no vorhanden) (PRIO 1) ✅
+ * 
+ * 3. Reihenfolgeregeln (3.x):
+ *    - 3.1: Validierung vor Verarbeitung (PRIO 2)
+ *    - 3.2: Existenzprüfung vor Inhaltsprüfung (PRIO 3)
+ * 
+ * 4. Fehlerregeln (5.x):
+ *    - 5.1: Fehlerpfade modelliert (NO-Branch zu Output) (PRIO 2)
+ * 
+ * Implementierungs-Hinweise:
+ * - validateLogicGraph() erweitern mit regel-spezifischen Checks
+ * - Neue Funktion: detectCycles(graph) für 1.7
+ * - Neue Funktion: isReachable(graph, nodeId, fromStart) für 1.5
+ * - ValidationIssue erweitern mit ruleId: "1.7" für Tracking
+ * ----------------------------------------- */
+
+/* -----------------------------------------
+ * Current Validation (Basic Checks)
  * ----------------------------------------- */
 
 export interface ValidationIssue {
     severity: "error" | "warning";
     message: string;
     nodeId?: string;
+    ruleId?: string; // e.g. "1.7", "2.1", "5.1" für Strukturregeln
 }
 
 export interface ValidationResult {

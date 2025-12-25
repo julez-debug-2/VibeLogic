@@ -218,6 +218,12 @@ function SuggestionGroup({
                                 <div className="px-3 pb-3 space-y-2">
                                     <p className="text-gray-700">{description}</p>
 
+                                    {suggestion.insertPosition && (
+                                        <div className="text-xs text-gray-600 italic bg-gray-100 px-2 py-1 rounded">
+                                            📍 Position: {String(suggestion.insertPosition)}
+                                        </div>
+                                    )}
+
                                     {suggestion.suggestedNode && typeof suggestion.suggestedNode === 'object' && (
                                         <div className="bg-blue-50 p-2 rounded text-xs space-y-1">
                                             <div className="font-semibold text-blue-900">

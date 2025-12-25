@@ -1,4 +1,4 @@
-import { DecisionNode, LogicGraph, LogicNode } from "../logic/types";
+import { LogicGraph, LogicNode } from "../logic/types";
 import { PromptPreset, PromptTarget } from "./presets";
 
 /**
@@ -59,43 +59,32 @@ export function generatePrompt(
     lines.push("");
 
     /* -----------------------------------------
-     * Step-by-step logic
+     * Logic flow with execution order
      * ----------------------------------------- */
 
-    lines.push(`## Step-by-Step Logic`);
+    lines.push(`## LOGIC FLOW`);
 
-    graph.nodes.forEach((node, index) => {
-        lines.push(formatNode(node, index + 1));
-    });
+    // Build execution order by traversing edges with inline branches
+    const flowLines = buildFlowRepresentation(graph);
+    lines.push(...flowLines);
 
     lines.push("");
 
     /* -----------------------------------------
-     * Decision details
+     * Constraints
      * ----------------------------------------- */
 
-    const decisions = graph.nodes.filter(
-        (n): n is DecisionNode => n.type === "decision"
-    );
-
-    if (decisions.length > 0) {
-        lines.push(`## Decisions`);
-
-        for (const decision of decisions) {
-            lines.push(`- Condition: ${decision.condition}`);
-            lines.push(`  - Yes → node ${decision.branches.yes}`);
-            lines.push(`  - No  → node ${decision.branches.no}`);
-        }
-
-        lines.push("");
-    }
-
+    lines.push(`## CONSTRAINTS`);
+    lines.push(`- Do not invent additional logic`);
+    lines.push(`- Follow the flow exactly as described`);
+    lines.push(`- Use clear, descriptive naming`);
+    lines.push(`- Implement error handling where appropriate`);
+    lines.push("");
     /* -----------------------------------------
-     * Output instructions
+     * Detail level instructions
      * ----------------------------------------- */
 
-    lines.push(`## Output Requirements`);
-
+    lines.push(`## OUTPUT REQUIREMENTS`);
     switch (detailLevel) {
         case "brief":
             lines.push(`- Provide only the core implementation.`);
@@ -132,6 +121,152 @@ export function generatePrompt(
  * Helpers
  * ----------------------------------------- */
 
+function capitalizeNodeType(type: string): string {
+    return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+/**
+ * Build a flow representation that shows branches inline with proper context
+ */
+function buildFlowRepresentation(graph: LogicGraph): string[] {
+    const lines: string[] = [];
+    const inputNode = graph.nodes.find(n => n.type === "input");
+    
+    if (!inputNode) {
+        // Fallback: list all nodes
+        graph.nodes.forEach((node, index) => {
+            lines.push(`${index + 1}. **${capitalizeNodeType(node.type)}:** ${node.label}`);
+            if (node.description && node.description !== node.label) {
+                lines.push(`   ${node.description}`);
+            }
+        });
+        return lines;
+    }
+
+    const visited = new Set<string>();
+    let counter = 1;
+
+    function traverse(nodeId: string, indent: string = ""): void {
+        if (visited.has(nodeId)) return;
+        
+        const node = graph.nodes.find(n => n.id === nodeId);
+        if (!node) return;
+
+        visited.add(nodeId);
+
+        // Format node line
+        const num = counter++;
+        lines.push(`${num}. **${capitalizeNodeType(node.type)}:** ${node.label}`);
+        if (node.description && node.description !== node.label) {
+            lines.push(`   ${node.description}`);
+        }
+
+        // Find outgoing edges
+        const outgoingEdges = graph.edges.filter(e => e.from === nodeId);
+
+        if (node.type === "decision") {
+            // For decisions, follow YES branch completely first, then NO branch
+            const yesEdge = outgoingEdges.find(e => e.condition === "yes");
+            const noEdge = outgoingEdges.find(e => e.condition === "no");
+
+            // Follow YES branch completely (recursive)
+            if (yesEdge && !visited.has(yesEdge.to)) {
+                traverse(yesEdge.to, indent);
+            }
+
+            // Then follow NO branch (this typically leads to an error/early exit OUTPUT)
+            if (noEdge && !visited.has(noEdge.to)) {
+                traverse(noEdge.to, indent);
+            }
+        } else {
+            // For non-decisions, just follow the next edge
+            outgoingEdges.forEach(edge => {
+                if (!visited.has(edge.to)) {
+                    traverse(edge.to, indent);
+                }
+            });
+        }
+    }
+
+    traverse(inputNode.id);
+
+    // Add unvisited nodes at the end
+    graph.nodes.forEach(node => {
+        if (!visited.has(node.id)) {
+            const num = counter++;
+            lines.push(`${num}. **${capitalizeNodeType(node.type)}:** ${node.label}`);
+            if (node.description && node.description !== node.label) {
+                lines.push(`   ${node.description}`);
+            }
+        }
+    });
+
+    return lines;
+}
+
+function buildExecutionOrder(graph: LogicGraph): LogicNode[] {
+    // Find input node (entry point)
+    const inputNode = graph.nodes.find(n => n.type === "input");
+
+    if (!inputNode) {
+        // Fallback: return nodes as-is
+        return graph.nodes;
+    }
+
+    const visited = new Set<string>();
+    const order: LogicNode[] = [];
+
+    function traverse(nodeId: string) {
+        if (visited.has(nodeId)) return;
+
+        const node = graph.nodes.find(n => n.id === nodeId);
+        if (!node) return;
+
+        visited.add(nodeId);
+        order.push(node);
+
+        // Find outgoing edges
+        const outgoingEdges = graph.edges.filter(e => e.from === nodeId);
+
+        // For decision nodes, follow YES branch first, then NO (using edges, not node properties!)
+        if (node.type === "decision") {
+            const yesEdge = outgoingEdges.find(e => e.condition === "yes");
+            const noEdge = outgoingEdges.find(e => e.condition === "no");
+
+            if (yesEdge && !visited.has(yesEdge.to)) {
+                traverse(yesEdge.to);
+            }
+            if (noEdge && !visited.has(noEdge.to)) {
+                traverse(noEdge.to);
+            }
+            // Handle edges without condition labels (fallback)
+            outgoingEdges.forEach(edge => {
+                if (!edge.condition && !visited.has(edge.to)) {
+                    traverse(edge.to);
+                }
+            });
+        } else {
+            // For other nodes, follow all outgoing edges
+            outgoingEdges.forEach(edge => {
+                if (!visited.has(edge.to)) {
+                    traverse(edge.to);
+                }
+            });
+        }
+    }
+
+    traverse(inputNode.id);
+
+    // Add any remaining unvisited nodes (isolated nodes)
+    graph.nodes.forEach(node => {
+        if (!visited.has(node.id)) {
+            order.push(node);
+        }
+    });
+
+    return order;
+}
+
 function formatNode(node: LogicNode, index: number): string {
     switch (node.type) {
         case "start":
@@ -146,7 +281,5 @@ function formatNode(node: LogicNode, index: number): string {
             return `${index}. DECISION: ${node.condition}`;
         case "output":
             return `${index}. OUTPUT: ${node.label}`;
-        default:
-            return `${index}. ${node.label}`;
     }
 }

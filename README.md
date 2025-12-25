@@ -34,3 +34,29 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Ollama Setup
+
+VibeLogic nutzt Ollama für AI-gestützte Flow-Generierung. Du hast zwei Optionen:
+
+### Ollama Cloud (Empfohlen - Kein lokales Setup nötig!)
+1. Hole dir einen API Key auf [ollama.com](https://ollama.com)
+2. Öffne die App und klicke auf **Einstellungen** (⚙️)
+3. Trage ein:
+   - Endpoint: `https://api.ollama.com`
+   - Model: `llama3.2`
+   - API Key: Dein Key von ollama.com
+
+**Siehe:** [OLLAMA_CLOUD_SETUP.md](./OLLAMA_CLOUD_SETUP.md) für Details
+
+### Lokales Ollama (Für Offline-Nutzung)
+```bash
+# Installation siehe OLLAMA_SETUP.md
+ollama pull llama3.2
+ollama serve
+```
+
+**Siehe:** [OLLAMA_SETUP.md](./OLLAMA_SETUP.md) für Details
+
+
+Start: cmd /c "rmdir /s /q .next 2>nul & npm run dev"

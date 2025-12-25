@@ -66,9 +66,18 @@ export function generatePrompt(
     const lines: string[] = [];
 
     /* ---------- ID → Name Mapping für lesbare Referenzen ---------- */
-    const nodeMap = new Map(
-        graph.nodes.map(n => [n.id, n.label || "Unnamed"])
-    );
+    const nodeMap = new Map<string, string>();
+    graph.nodes.forEach(n => {
+        // Use label (title) as display name, fallback to "Unnamed"
+        nodeMap.set(n.id, n.label || "Unnamed");
+    });
+
+    /* ---------- Sortiere Nodes nach Flow-Logik ---------- */
+    const sortedNodes = sortNodesByFlow(graph);
+
+    console.log("📊 Graph nodes:", graph.nodes.map(n => ({ id: n.id, type: n.type, label: n.label })));
+    console.log("📊 Graph edges:", graph.edges);
+    console.log("📊 Sorted nodes:", sortedNodes.map(n => ({ type: n.type, label: n.label })));
 
     /* ---------- Rolle ---------- */
     lines.push(
@@ -96,59 +105,89 @@ export function generatePrompt(
     }
 
     lines.push("", "## LOGIC FLOW");
+    lines.push("```mermaid");
+    lines.push("graph TD");
 
-    /* ---------- Sortiere Nodes nach Flow-Logik ---------- */
-    const sortedNodes = sortNodesByFlow(graph);
+    /* ---------- Generate Mermaid Nodes ---------- */
+    const nodeIds = new Map<string, string>(); // originalId -> mermaidId
+    let mermaidIdCounter = 1;
 
-    /* ---------- Nodes ---------- */
-    let stepNumber = 1;
     for (const node of sortedNodes) {
+        const mermaidId = `N${mermaidIdCounter++}`;
+        nodeIds.set(node.id, mermaidId);
+
         const label = node.label || "Untitled";
-        const desc = node.description ? `\n   ${node.description}` : "";
+        const desc = node.description ? ` | ${node.description}` : "";
+        const fullLabel = `${label}${desc}`;
 
+        // Node Shapes basierend auf Typ
         if (node.type === "input") {
-            lines.push(`${stepNumber}. **Input:** ${label}${desc}`);
+            lines.push(`    ${mermaidId}[/"${fullLabel}"/]`); // Parallelogram (Input)
+        } else if (node.type === "decision") {
+            lines.push(`    ${mermaidId}{"${fullLabel}"}`); // Diamond (Decision)
+        } else if (node.type === "output") {
+            lines.push(`    ${mermaidId}(["${fullLabel}"])`); // Stadium (Output)
+        } else { // process
+            lines.push(`    ${mermaidId}["${fullLabel}"]`); // Rectangle (Process)
         }
-
-        if (node.type === "process") {
-            lines.push(`${stepNumber}. **Process:** ${label}${desc}`);
-        }
-
-        if (node.type === "decision") {
-            const condition = node.condition || label;
-            lines.push(`${stepNumber}. **Decision:** ${condition}${desc}`);
-        }
-
-        if (node.type === "output") {
-            lines.push(`${stepNumber}. **Output:** ${label}${desc}`);
-        }
-
-        stepNumber++;
     }
 
-    /* ---------- Decisions mit lesbaren Namen ---------- */
-    const decisionEdges = graph.edges.filter(e => e.branch);
+    /* ---------- Generate Mermaid Edges ---------- */
+    for (const edge of graph.edges) {
+        const fromId = nodeIds.get(edge.from);
+        const toId = nodeIds.get(edge.to);
+        
+        if (!fromId || !toId) continue;
 
-    if (decisionEdges.length > 0) {
-        lines.push("", "## DECISION BRANCHES");
-
-        for (const edge of decisionEdges) {
-            const fromName = nodeMap.get(edge.from) || edge.from;
-            const toName = nodeMap.get(edge.to) || edge.to;
-
-            lines.push(
-                `- **${edge.branch?.toUpperCase()}:** "${fromName}" → "${toName}"`
-            );
+        if (edge.branch) {
+            // Decision branch with label
+            lines.push(`    ${fromId} -->|${edge.branch.toUpperCase()}| ${toId}`);
+        } else {
+            // Normal connection
+            lines.push(`    ${fromId} --> ${toId}`);
         }
+    }
+
+    lines.push("```");
+    lines.push("");
+    lines.push("### Flow Explanation");
+    
+    /* ---------- Text Summary for Context ---------- */
+    const inputs = sortedNodes.filter(n => n.type === "input");
+    const decisions = sortedNodes.filter(n => n.type === "decision");
+    const outputs = sortedNodes.filter(n => n.type === "output");
+
+    if (inputs.length > 0) {
+        lines.push("**Inputs:**");
+        inputs.forEach(n => {
+            lines.push(`- ${n.label}${n.description ? `: ${n.description}` : ""}`);
+        });
+    }
+
+    if (decisions.length > 0) {
+        lines.push("", "**Key Decisions:**");
+        decisions.forEach(n => {
+            const condition = n.condition || n.label;
+            lines.push(`- ${condition}${n.description ? ` (${n.description})` : ""}`);
+        });
+    }
+
+    if (outputs.length > 0) {
+        lines.push("", "**Possible Outcomes:**");
+        outputs.forEach(n => {
+            lines.push(`- ${n.label}${n.description ? `: ${n.description}` : ""}`);
+        });
     }
 
     lines.push(
         "",
         "## CONSTRAINTS",
-        "- Do not invent additional logic",
-        "- Follow the flow exactly as described",
-        "- Use clear, descriptive naming",
-        "- Implement error handling where appropriate"
+        "- **Follow the exact flow:** Do not skip, reorder, or add steps",
+        "- **Respect all decision branches:** Implement both YES and NO paths",
+        "- **Use descriptions as implementation hints:** Node descriptions contain technical details (e.g., \"bcrypt/argon2\", \"JWT Token\")",
+        "- **Error handling:** Each OUTPUT node represents a distinct outcome (success or specific error)",
+        "- **Clean code:** Use clear naming, proper structure, and maintainable patterns",
+        "- **Production-ready:** Include validation, logging, and security best practices where appropriate"
     );
 
     return lines.join("\n");

@@ -7,11 +7,14 @@ interface ValidationPanelProps {
     onNodeClick?: (nodeId: string) => void;
 }
 
-export function ValidationPanel({ issues, onNodeClick }: ValidationPanelProps) {
-    const errors = issues.filter((i) => i.severity === "error");
-    const warnings = issues.filter((i) => i.severity === "warning");
+export function ValidationPanel({ issues = [], onNodeClick }: ValidationPanelProps) {
+    // Defensive: Ensure issues is always an array
+    const issuesArray = Array.isArray(issues) ? issues : [];
 
-    if (issues.length === 0) {
+    const errors = issuesArray.filter((i) => i.severity === "error");
+    const warnings = issuesArray.filter((i) => i.severity === "warning");
+
+    if (issuesArray.length === 0) {
         return (
             <div className="p-4 text-sm text-green-700 bg-green-50 rounded">
                 ✓ Flow ist valide
