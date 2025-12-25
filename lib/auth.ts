@@ -6,12 +6,12 @@ import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import { Pool } from "@neondatabase/serverless";
-import { PgAdapter } from "@auth/pg-adapter";
+import PostgresAdapter from "@auth/pg-adapter";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-    adapter: PgAdapter(pool),
+    adapter: PostgresAdapter(pool),
     providers: [
         GitHub({
             clientId: process.env.GITHUB_ID!,
