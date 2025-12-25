@@ -1,17 +1,26 @@
 -- Vercel Postgres Schema for VibeLogic
--- Run this in Vercel Dashboard → Storage → Postgres → SQL Editor
+-- Run this in Neon SQL Editor
+
+-- Clean slate: Drop all tables first
+DROP TABLE IF EXISTS shared_flows CASCADE;
+DROP TABLE IF EXISTS flows CASCADE;
+DROP TABLE IF EXISTS sessions CASCADE;
+DROP TABLE IF EXISTS accounts CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS verification_token CASCADE;
 
 -- Next-Auth Tables (required by @auth/pg-adapter)
-CREATE TABLE IF NOT EXISTS verification_token (
-    identifier TEXT NOT NULL,
-    expires TIMESTAMPTZ NOT NULL,
-    token TEXT NOT NULL,
-    PRIMARY KEY (identifier, token)
+CREATE TABLE users (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    name TEXT,
+    email TEXT UNIQUE,
+    "emailVerified" TIMESTAMPTZ,
+    image TEXT
 );
 
-CREATE TABLE IF NOT EXISTS accounts (
+CREATE TABLE accounts (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL,
     provider TEXT NOT NULL,
     "providerAccountId" TEXT NOT NULL,
@@ -24,29 +33,22 @@ CREATE TABLE IF NOT EXISTS accounts (
     token_type TEXT
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE sessions (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     "sessionToken" TEXT NOT NULL UNIQUE,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires TIMESTAMPTZ NOT NULL
 );
 
--- Users table (used by Next-Auth)
-CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
-    name TEXT,
-    email TEXT UNIQUE,
-    "emailVerified" TIMESTAMPTZ,
-    image TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE verification_token (
+    identifier TEXT NOT NULL,
+    expires TIMESTAMPTZ NOT NULL,
+    token TEXT NOT NULL,
+    PRIMARY KEY (identifier, token)
 );
 
--- Foreign keys for Next-Auth
-ALTER TABLE accounts ADD CONSTRAINT fk_accounts_userId FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE;
-ALTER TABLE sessions ADD CONSTRAINT fk_sessions_userId FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE;
-
 -- Flows table
-CREATE TABLE IF NOT EXISTS flows (
+CREATE TABLE flows (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title TEXT NOT NULL DEFAULT 'Untitled Flow',
@@ -59,7 +61,7 @@ CREATE TABLE IF NOT EXISTS flows (
 );
 
 -- Shared flows table (for public sharing links)
-CREATE TABLE IF NOT EXISTS shared_flows (
+CREATE TABLE shared_flows (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE,
     share_token TEXT UNIQUE NOT NULL,
@@ -68,9 +70,9 @@ CREATE TABLE IF NOT EXISTS shared_flows (
 );
 
 -- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_flows_user_id ON flows(user_id);
-CREATE INDEX IF NOT EXISTS idx_flows_updated_at ON flows(updated_at DESC);
-CREATE INDEX IF NOT EXISTS idx_shared_flows_token ON shared_flows(share_token);
+CREATE INDEX idx_flows_user_id ON flows(user_id);
+CREATE INDEX idx_flows_updated_at ON flows(updated_at DESC);
+CREATE INDEX idx_shared_flows_token ON shared_flows(share_token);
 
 -- Function to auto-update updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
