@@ -12,10 +12,12 @@ export type LogicNode = {
     condition?: string;
 };
 
+// Updated: condition instead of branch for edge conditions
 export type LogicEdge = {
+    id: string;
     from: string;
     to: string;
-    branch?: "yes" | "no";
+    condition?: "yes" | "no" | string;
 };
 
 export type LogicGraph = {
