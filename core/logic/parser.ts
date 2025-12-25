@@ -229,7 +229,8 @@ export function parseLogicText(
             };
 
             nodes.push(node);
-            edges.push({ id: nanoid(), from: lastNodeId, to: node.id }); \n            lastNodeId = node.id;
+            edges.push({ id: nanoid(), from: lastNodeId, to: node.id });
+            lastNodeId = node.id;
             pendingDecision = null;
             continue;
         }
