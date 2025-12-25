@@ -62,11 +62,11 @@ export function logicGraphToFlow(graph: LogicGraph): {
         };
 
         // Add branch label for decisions
-        if (edge.branch) {
-            reactEdge.label = edge.branch.toUpperCase();
-            reactEdge.sourceHandle = edge.branch; // YES/NO handle
+        if (edge.condition) {
+            reactEdge.label = edge.condition.toUpperCase();
+            reactEdge.sourceHandle = edge.condition; // YES/NO handle
             reactEdge.style = {
-                stroke: edge.branch === "yes" ? "#22c55e" : "#ef4444",
+                stroke: edge.condition === "yes" ? "#22c55e" : "#ef4444",
             };
         }
 

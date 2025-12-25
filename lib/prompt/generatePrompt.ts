@@ -139,9 +139,9 @@ export function generatePrompt(
         
         if (!fromId || !toId) continue;
 
-        if (edge.branch) {
+        if (edge.condition) {
             // Decision branch with label
-            lines.push(`    ${fromId} -->|${edge.branch.toUpperCase()}| ${toId}`);
+            lines.push(`    ${fromId} -->|${edge.condition.toUpperCase()}| ${toId}`);
         } else {
             // Normal connection
             lines.push(`    ${fromId} --> ${toId}`);

@@ -69,8 +69,8 @@ export function validateLogicGraph(graph: LogicGraph): ValidationResult {
     const decisionNodes = graph.nodes.filter(n => n.type === "decision");
     for (const decision of decisionNodes) {
         // In lib structure, branches are stored in edges with branch: "yes"/"no"
-        const yesEdge = graph.edges.find(e => e.from === decision.id && e.branch === "yes");
-        const noEdge = graph.edges.find(e => e.from === decision.id && e.branch === "no");
+        const yesEdge = graph.edges.find(e => e.from === decision.id && e.condition === "yes");
+        const noEdge = graph.edges.find(e => e.from === decision.id && e.condition === "no");
 
         if (!yesEdge || !noEdge) {
             issues.push({

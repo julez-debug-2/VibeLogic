@@ -155,7 +155,7 @@ ${logicGraph.nodes.map((n, i) => {
 ${logicGraph.edges.map(e => {
         const fromName = nodeNames.get(e.from) || e.from;
         const toName = nodeNames.get(e.to) || e.to;
-        return `  ${fromName} → ${toName}${e.branch ? ` (${e.branch})` : ''}`;
+        return `  ${fromName} → ${toName}${e.condition ? ` (${e.condition})` : ''}`;
     }).join('\n')}`;
 }
 
@@ -598,7 +598,7 @@ ${logicGraph.nodes.map((n, i) => {
 ${logicGraph.edges.map(e => {
             const fromName = nodeNames.get(e.from) || e.from;
             const toName = nodeNames.get(e.to) || e.to;
-            return `  ${fromName} → ${toName}${e.branch ? ` (${e.branch})` : ''}`;
+            return `  ${fromName} → ${toName}${e.condition ? ` (${e.condition})` : ''}`;
         }).join('\n')}`;
     }
 

@@ -164,7 +164,7 @@ export function parseFlowText(text: string): LogicGraph {
     }
 
     console.log(`✅ Parser created ${nodes.length} nodes and ${edges.length} edges`);
-    console.log(`📊 Edges:`, edges.map(e => `${nodes.find(n => n.id === e.from)?.label} → ${nodes.find(n => n.id === e.to)?.label} ${e.branch ? `[${e.branch}]` : ''}`));
+    console.log(`📊 Edges:`, edges.map(e => `${nodes.find(n => n.id === e.from)?.label} → ${nodes.find(n => n.id === e.to)?.label} ${e.condition ? `[${e.condition}]` : ''}`));
 
     return {
         title: "Optimized Flow",
