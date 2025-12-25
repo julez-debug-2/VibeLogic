@@ -24,6 +24,9 @@ import {
  * OUTPUT: <title> | <description>
  */
 
+let idCounter = 0;
+const nextId = (): LogicId => `node_${idCounter++}`;
+
 interface ParsedNode {
     type: "input" | "process" | "decision" | "output";
     title: string;

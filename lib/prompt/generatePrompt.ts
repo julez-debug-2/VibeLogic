@@ -136,7 +136,7 @@ export function generatePrompt(
     for (const edge of graph.edges) {
         const fromId = nodeIds.get(edge.from);
         const toId = nodeIds.get(edge.to);
-        
+
         if (!fromId || !toId) continue;
 
         if (edge.condition) {
@@ -151,7 +151,7 @@ export function generatePrompt(
     lines.push("```");
     lines.push("");
     lines.push("### Flow Explanation");
-    
+
     /* ---------- Text Summary for Context ---------- */
     const inputs = sortedNodes.filter(n => n.type === "input");
     const decisions = sortedNodes.filter(n => n.type === "decision");

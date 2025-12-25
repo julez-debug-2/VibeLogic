@@ -1,4 +1,4 @@
-import { Edge, Node } from "@xyflow/react";
+import { Edge, Node } from "reactflow";
 
 /**
  * Convert ReactFlow nodes/edges to simple text format

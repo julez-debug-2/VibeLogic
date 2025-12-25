@@ -54,7 +54,7 @@ export interface PromptAnalysisOptions {
         edges: Array<{
             from: string;
             to: string;
-            branch?: string;
+            condition?: string;
         }>;
     };
 }
