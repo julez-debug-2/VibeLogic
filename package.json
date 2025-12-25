@@ -10,6 +10,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth/pg-adapter": "^1.11.1",
+    "@neondatabase/serverless": "^1.0.2",
     "@vercel/postgres": "^0.10.0",
     "nanoid": "^5.1.6",
     "next": "16.1.0",

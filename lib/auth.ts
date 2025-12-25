@@ -1,12 +1,17 @@
 /**
- * Next-Auth Configuration
+ * Next-Auth Configuration with PostgreSQL Adapter
  */
 
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+import { Pool } from "@neondatabase/serverless";
+import { PgAdapter } from "@auth/pg-adapter";
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    adapter: PgAdapter(pool),
     providers: [
         GitHub({
             clientId: process.env.GITHUB_ID!,
@@ -21,9 +26,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         signIn: "/auth/signin",
     },
     callbacks: {
-        async session({ session, token }) {
-            if (session.user && token.sub) {
-                session.user.id = token.sub;
+        async session({ session, user }) {
+            if (session.user && user) {
+                session.user.id = user.id;
             }
             return session;
         },

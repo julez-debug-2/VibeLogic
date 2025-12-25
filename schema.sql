@@ -1,14 +1,49 @@
 -- Vercel Postgres Schema for VibeLogic
 -- Run this in Vercel Dashboard → Storage → Postgres → SQL Editor
 
--- Users table (auto-populated by Next-Auth)
+-- Next-Auth Tables (required by @auth/pg-adapter)
+CREATE TABLE IF NOT EXISTS verification_token (
+    identifier TEXT NOT NULL,
+    expires TIMESTAMPTZ NOT NULL,
+    token TEXT NOT NULL,
+    PRIMARY KEY (identifier, token)
+);
+
+CREATE TABLE IF NOT EXISTS accounts (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    "userId" TEXT NOT NULL,
+    type TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    refresh_token TEXT,
+    access_token TEXT,
+    expires_at BIGINT,
+    id_token TEXT,
+    scope TEXT,
+    session_state TEXT,
+    token_type TEXT
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    "sessionToken" TEXT NOT NULL UNIQUE,
+    "userId" TEXT NOT NULL,
+    expires TIMESTAMPTZ NOT NULL
+);
+
+-- Users table (used by Next-Auth)
 CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
     name TEXT,
+    email TEXT UNIQUE,
+    "emailVerified" TIMESTAMPTZ,
     image TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Foreign keys for Next-Auth
+ALTER TABLE accounts ADD CONSTRAINT fk_accounts_userId FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE sessions ADD CONSTRAINT fk_sessions_userId FOREIGN KEY ("userId") REFERENCES users(id) ON DELETE CASCADE;
 
 -- Flows table
 CREATE TABLE IF NOT EXISTS flows (
