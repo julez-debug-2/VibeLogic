@@ -15,9 +15,10 @@ export function flowToLogicGraph(
         })),
 
         edges: edges.map((e) => ({
+            id: e.id,
             from: e.source,
             to: e.target,
-            branch:
+            condition:
                 e.sourceHandle === "yes"
                     ? "yes"
                     : e.sourceHandle === "no"
