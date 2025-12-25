@@ -3,19 +3,19 @@
  */
 
 export async function generateFlowFromPrompt(
-    userPrompt: string,
-    endpoint: string = "http://localhost:11434",
-    model: string = "qwen2.5:32b",
-    options?: {
-        currentFlow?: string;
-        conversationHistory?: Array<{ role: string; content: string }>;
-        apiKey?: string;
-    }
+  userPrompt: string,
+  endpoint: string = "http://localhost:11434",
+  model: string = "qwen2.5:32b",
+  options?: {
+    currentFlow?: string;
+    conversationHistory?: Array<{ role: string; content: string }>;
+    apiKey?: string;
+  }
 ): Promise<string> {
 
-    const { currentFlow, conversationHistory = [] } = options || {};
+  const { currentFlow, conversationHistory = [] } = options || {};
 
-    const systemPrompt = `Du bist ein Software-Architektur-Assistent. Der User beschreibt einen Prozess oder eine Logik in natürlicher Sprache. Deine Aufgabe ist es, daraus einen strukturierten Logik-Flow zu erstellen, der vom Parser gelesen werden kann.
+  const systemPrompt = `Du bist ein Software-Architektur-Assistent. Der User beschreibt einen Prozess oder eine Logik in natürlicher Sprache. Deine Aufgabe ist es, daraus einen strukturierten Logik-Flow zu erstellen, der vom Parser gelesen werden kann.
 
 ${currentFlow ? `**WICHTIG:** Es existiert bereits ein Flow. Der User möchte diesen anpassen oder verfeinern. Modifiziere den bestehenden Flow basierend auf dem Feedback.
 
@@ -175,48 +175,48 @@ OUTPUT: Fehler bei Aktion | Fehlermeldung anzeigen
 - Alle Decision-Branches müssen zu existierenden Nodes führen
 - Denke an Error-Fälle und alternative Pfade`;
 
-    console.log("🤖 Generating flow from prompt:", userPrompt);
-    console.log("📜 Conversation history:", conversationHistory.length, "messages");
+  console.log("🤖 Generating flow from prompt:", userPrompt);
+  console.log("📜 Conversation history:", conversationHistory.length, "messages");
 
-    // Build messages array with conversation history
-    const messages: Array<{ role: string; content: string }> = [
-        { role: "system", content: systemPrompt },
-        ...conversationHistory
-    ];
+  // Build messages array with conversation history
+  const messages: Array<{ role: string; content: string }> = [
+    { role: "system", content: systemPrompt },
+    ...conversationHistory
+  ];
 
-    // Use Next.js API route to avoid CORS issues with Ollama Cloud
-    const response = await fetch('/api/ollama', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            endpoint,
-            model,
-            messages,
-            options: {
-                temperature: 0.3,
-                top_p: 0.9,
-            }
-        })
-    });
+  // Use Next.js API route to avoid CORS issues with Ollama Cloud
+  const response = await fetch('/api/ollama', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      endpoint,
+      model,
+      messages,
+      options: {
+        temperature: 0.3,
+        top_p: 0.9,
+      }
+    })
+  });
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`AI request failed: ${errorData.error || response.statusText}`);
-    }
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`AI request failed: ${errorData.error || response.statusText}`);
+  }
 
-    const data = await response.json();
-    
-    // Ollama package returns response directly with 'message' property
-    const aiResponse = data.message?.content || "";
+  const data = await response.json();
 
-    console.log("✅ AI Generated Flow:\n", aiResponse);
+  // Ollama package returns response directly with 'message' property
+  const aiResponse = data.message?.content || "";
 
-    // Extract flow from code blocks if present
-    const codeBlockMatch = aiResponse.match(/```(?:text|plaintext)?\n([\s\S]+?)\n```/);
-    if (codeBlockMatch) {
-        return codeBlockMatch[1].trim();
-    }
+  console.log("✅ AI Generated Flow:\n", aiResponse);
 
-    // Otherwise return as-is
-    return aiResponse.trim();
+  // Extract flow from code blocks if present
+  const codeBlockMatch = aiResponse.match(/```(?:text|plaintext)?\n([\s\S]+?)\n```/);
+  if (codeBlockMatch) {
+    return codeBlockMatch[1].trim();
+  }
+
+  // Otherwise return as-is
+  return aiResponse.trim();
 }

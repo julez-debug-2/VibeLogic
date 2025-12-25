@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
         // Create Ollama client with API key from environment
         const apiKey = process.env.OLLAMA_API_KEY;
-        
+
         const ollama = new Ollama({
             host: endpoint,
             ...(apiKey && {

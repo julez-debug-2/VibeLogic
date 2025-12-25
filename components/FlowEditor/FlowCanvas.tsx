@@ -15,16 +15,14 @@ import ReactFlow, {
 
 import { nanoid } from "nanoid";
 
+import { AIChatSidebar } from "./AIChatSidebar";
 import { BlockPalette, BlockPreset } from "./BlockPalette";
 import { LogicBlockNode } from "./nodes/LogicBlockNode";
-import { ValidationPanel } from "./ValidationPanel";
-import { AIChatSidebar } from "./AIChatSidebar";
 
 import { validateLogicGraph, ValidationIssue } from "@/core/logic/analyzer";
 import { flowToLogicGraph } from "@/lib/logic/flowToLogicGraph";
 import { generateFlowFromPrompt } from "@/lib/logic/generateFlowFromPrompt";
 import { flowToText, optimizeWithAI } from "@/lib/logic/optimizeFlow";
-import { analyzePromptWithAI, PromptAnalysisResult, PromptSuggestion } from "@/lib/prompt/analyzePrompt";
 import { generatePrompt } from "@/lib/prompt/generatePrompt";
 
 import "reactflow/dist/style.css";
@@ -87,10 +85,10 @@ export function FlowCanvas() {
         // Skip if we're loading from history (undo/redo)
         if (flowHistory.length > 0 && historyIndex < flowHistory.length) {
             const currentHistoryState = flowHistory[historyIndex];
-            const isSameState = 
+            const isSameState =
                 JSON.stringify(currentHistoryState?.nodes) === JSON.stringify(nodes) &&
                 JSON.stringify(currentHistoryState?.edges) === JSON.stringify(edges);
-            
+
             if (isSameState) return; // We're in undo/redo, don't add to history
         }
 
@@ -499,7 +497,7 @@ export function FlowCanvas() {
                 {/* Block Palette + Node Inspector */}
                 <div className="w-[260px] border-r border-white/10 bg-neutral-900/50 backdrop-blur-xl flex flex-col">
                     <BlockPalette onAdd={addBlock} />
-                    
+
                     {/* Node Inspector */}
                     <div className="border-t border-white/10">
                         <div className="px-4 py-3 text-xs font-semibold text-gray-300 bg-black/20 flex items-center gap-2">
@@ -716,11 +714,10 @@ export function FlowCanvas() {
             {messageModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
                     <div className="bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md">
-                        <div className={`p-5 border-b border-white/10 flex items-center gap-3 ${
-                            messageModal.type === "success" ? "bg-green-500/10" :
-                            messageModal.type === "error" ? "bg-red-500/10" :
-                            "bg-blue-500/10"
-                        }`}>
+                        <div className={`p-5 border-b border-white/10 flex items-center gap-3 ${messageModal.type === "success" ? "bg-green-500/10" :
+                                messageModal.type === "error" ? "bg-red-500/10" :
+                                    "bg-blue-500/10"
+                            }`}>
                             {messageModal.type === "success" ? (
                                 <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -734,14 +731,13 @@ export function FlowCanvas() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             )}
-                            <h3 className={`text-lg font-semibold ${
-                                messageModal.type === "success" ? "text-green-400" :
-                                messageModal.type === "error" ? "text-red-400" :
-                                "text-blue-400"
-                            }`}>
+                            <h3 className={`text-lg font-semibold ${messageModal.type === "success" ? "text-green-400" :
+                                    messageModal.type === "error" ? "text-red-400" :
+                                        "text-blue-400"
+                                }`}>
                                 {messageModal.type === "success" ? "Erfolg" :
-                                 messageModal.type === "error" ? "Fehler" :
-                                 "Information"}
+                                    messageModal.type === "error" ? "Fehler" :
+                                        "Information"}
                             </h3>
                         </div>
                         <div className="p-6">

@@ -177,7 +177,7 @@ Gib den vollständig überarbeiteten Flow aus. NUR das Format, keine Erklärung.
     }
 
     const data = await response.json();
-    
+
     // Ollama package returns response directly with 'message' property
     const aiResponse = data.message?.content || "";
 
